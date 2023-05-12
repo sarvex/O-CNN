@@ -52,19 +52,19 @@ def download_data():
   if not os.path.exists(root_folder):
     os.makedirs(root_folder)
   url = 'https://www.dropbox.com/s/lynuimh1bbtnkty/midnet_data.zip?dl=0'
-  cmd = 'wget %s -O %s.zip' % (url, root_folder)
+  cmd = f'wget {url} -O {root_folder}.zip'
   print(cmd)
   os.system(cmd)
 
   # unzip
-  cmd = 'unzip %s.zip -d %s/..' % (root_folder, root_folder)
+  cmd = f'unzip {root_folder}.zip -d {root_folder}/..'
   print(cmd)
   os.system(cmd)
 
 
 def shapenet_unzip():
   shapenet = os.path.join(root_folder, 'ShapeNetCore.v1.zip')
-  cmd = 'unzip %s -d %s' % (shapenet, root_folder)
+  cmd = f'unzip {shapenet} -d {root_folder}'
   print(cmd)
   os.system(cmd)
 
@@ -75,7 +75,7 @@ def shapenet_unzip():
     if not filename.endswith('.zip'):
       os.remove(abs_name)
     else:
-      cmd = 'unzip %s -d %s' % (abs_name, shapenet_folder)
+      cmd = f'unzip {abs_name} -d {shapenet_folder}'
       print(cmd)
       os.system(cmd)
 
@@ -95,7 +95,7 @@ def shapenet_move_objs():
     filenames = os.listdir(src_folder)
     for filename in filenames:
       src_filename = os.path.join(src_folder, filename, 'model.obj')
-      des_filename = os.path.join(des_folder, filename + '.obj')
+      des_filename = os.path.join(des_folder, f'{filename}.obj')
       if not os.path.exists(src_filename):
         print('Warning: not exist - ', src_filename)
         continue
@@ -117,7 +117,7 @@ def shapenet_convert_mesh_to_points():
   folders = os.listdir(mesh_folder)
   for folder in folders:
     curr_folder = os.path.join(mesh_folder, folder)
-    cmd = '%s %s 14' % (virtual_scanner,  curr_folder)
+    cmd = f'{virtual_scanner} {curr_folder} 14'
     print(cmd)
     os.system(cmd)
 
@@ -188,7 +188,7 @@ def shapenet_clustering():
     des_folder = os.path.join(output_folder, folder)
     if not os.path.exists(des_folder):
       os.makedirs(des_folder)
-    print('Processing: ' + des_folder)
+    print(f'Processing: {des_folder}')
 
     filenames = os.listdir(src_folder)
     point_cloud = pyoctree.Points()
@@ -216,8 +216,7 @@ def shapenet_generate_points_tfrecords():
 
   tfrecords_name = os.path.join(
       root_folder, 'shapenet.points.64.cluster.100.tfrecords')
-  cmd = 'python %s --shuffle true --file_dir %s --list_file %s --records_name %s' % \
-        (converter, points_folder, filelist, tfrecords_name)
+  cmd = f'python {converter} --shuffle true --file_dir {points_folder} --list_file {filelist} --records_name {tfrecords_name}'
   print(cmd)
   os.system(cmd)
 
@@ -232,4 +231,4 @@ def shapenet_create_tfrecords():
 
 
 if __name__ == '__main__':
-  eval('%s()' % args.run)
+  eval(f'{args.run}()')

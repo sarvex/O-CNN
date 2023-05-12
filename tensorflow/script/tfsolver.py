@@ -44,10 +44,10 @@ class TFSolver:
 
   def summ2txt(self, values, step, flag='a'):
     test_summ = os.path.join(self.flags.logdir, 'test_summaries.csv')
-    with open(test_summ, flag) as fid:      
-      msg = '{}'.format(step)
+    with open(test_summ, flag) as fid:    
+      msg = f'{step}'
       for v in values:
-        msg += ', {}'.format(v)
+        msg += f', {v}'
       fid.write(msg + '\n')
 
   def build_test_graph(self):
@@ -60,7 +60,7 @@ class TFSolver:
         self.test_tensors = average_tensors(self.test_tensors)        
 
   def restore(self, sess, ckpt):
-    print('Load checkpoint: ' + ckpt)
+    print(f'Load checkpoint: {ckpt}')
     self.tf_saver.restore(sess, ckpt)
 
   def initialize(self, sess):
@@ -176,7 +176,7 @@ class TFSolver:
       shape_num = shape.num_elements()
       print("{:3}, {:15}, [{}], {}".format(idx, v.name, shape_str, shape_num))
       total_num += shape_num
-    print('Total trainable parameters: {}'.format(total_num))
+    print(f'Total trainable parameters: {total_num}')
 
   def test(self):
     # build graph
@@ -197,7 +197,7 @@ class TFSolver:
 
       # restore and initialize
       self.initialize(sess)
-      print('Restore from checkpoint: %s' % self.flags.ckpt)
+      print(f'Restore from checkpoint: {self.flags.ckpt}')
       tf_saver.restore(sess, self.flags.ckpt)
 
       print('Start testing ...')
@@ -227,4 +227,4 @@ class TFSolver:
     self.summ2txt(avg_test, 'ALL')
 
   def run(self):
-    eval('self.{}()'.format(self.flags.run))
+    eval(f'self.{self.flags.run}()')

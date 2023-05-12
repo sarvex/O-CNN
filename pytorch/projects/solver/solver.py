@@ -60,7 +60,7 @@ class AverageTracker:
       with open(log_file, 'a') as fid:
         fid.write(msg + '\n')
     if len(msg) > self.max_len:
-      msg = msg[:self.max_len] + ' ...'
+      msg = f'{msg[:self.max_len]} ...'
     tqdm.write(msg)
 
 
@@ -116,10 +116,14 @@ class Solver:
     else:
       sampler = InfSampler(dataset, shuffle=flags.shuffle)
 
-    data_loader = torch.utils.data.DataLoader(
-        dataset, batch_size=flags.batch_size, num_workers=flags.num_workers,
-        sampler=sampler, collate_fn=collate_fn, pin_memory=True)
-    return data_loader
+    return torch.utils.data.DataLoader(
+        dataset,
+        batch_size=flags.batch_size,
+        num_workers=flags.num_workers,
+        sampler=sampler,
+        collate_fn=collate_fn,
+        pin_memory=True,
+    )
 
   def config_model(self):
     model = self.get_model(self.FLAGS.MODEL)
@@ -171,7 +175,7 @@ class Solver:
     self.log_file = os.path.join(self.logdir, 'log.csv')
 
     if self.is_master:
-      tqdm.write('Logdir: ' + self.logdir)
+      tqdm.write(f'Logdir: {self.logdir}')
 
     if self.is_master and set_writer:
       self.summry_writer = SummaryWriter(self.logdir, flush_secs=20)
@@ -250,13 +254,18 @@ class Solver:
 
     # save ckpt
     model_dict = self.model.module.state_dict() \
-                 if self.world_size > 1 else self.model.state_dict()
+                   if self.world_size > 1 else self.model.state_dict()
     ckpt_name = os.path.join(self.ckpt_dir, '%05d' % epoch)
-    torch.save(model_dict, ckpt_name + '.model.pth')
-    torch.save({'model_dict': model_dict, 'epoch': epoch,
-                'optimizer_dict': self.optimizer.state_dict(),
-                'scheduler_dict': self.scheduler.state_dict()},
-               ckpt_name + '.solver.tar')
+    torch.save(model_dict, f'{ckpt_name}.model.pth')
+    torch.save(
+        {
+            'model_dict': model_dict,
+            'epoch': epoch,
+            'optimizer_dict': self.optimizer.state_dict(),
+            'scheduler_dict': self.scheduler.state_dict(),
+        },
+        f'{ckpt_name}.solver.tar',
+    )
 
   def load_checkpoint(self):
     ckpt = self.FLAGS.SOLVER.ckpt
@@ -264,8 +273,7 @@ class Solver:
       # If ckpt is empty, then get the latest checkpoint from ckpt_dir
       if not os.path.exists(self.ckpt_dir):  return
       ckpts = sorted(os.listdir(self.ckpt_dir))
-      ckpts = [ck for ck in ckpts if ck.endswith('solver.tar')]
-      if len(ckpts) > 0:
+      if ckpts := [ck for ck in ckpts if ck.endswith('solver.tar')]:
         ckpt = os.path.join(self.ckpt_dir, ckpts[-1])
     if not ckpt:  return  # return if ckpt is still empty
 
@@ -286,7 +294,7 @@ class Solver:
 
     # print messages
     if self.is_master:
-      tqdm.write('Load the checkpoint: %s' % ckpt)
+      tqdm.write(f'Load the checkpoint: {ckpt}')
       tqdm.write('The start_epoch is %d' % self.start_epoch)
 
   def train(self):
@@ -355,7 +363,7 @@ class Solver:
       output['train/loss'].backward()
 
     json = os.path.join(self.FLAGS.SOLVER.logdir, 'trace.json')
-    print('Save the profile into: ' + json)
+    print(f'Save the profile into: {json}')
     prof.export_chrome_trace(json)
     print(prof.key_averages(group_by_stack_n=10)
               .table(sort_by="cuda_time_total", row_limit=10))
@@ -363,7 +371,7 @@ class Solver:
               .table(sort_by="cuda_memory_usage", row_limit=10))
 
   def run(self):
-    eval('self.%s()' % self.FLAGS.SOLVER.run)
+    eval(f'self.{self.FLAGS.SOLVER.run}()')
 
   @staticmethod
   def main_worker(gpu, FLAGS, TheSolver):

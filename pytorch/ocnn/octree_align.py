@@ -36,4 +36,4 @@ class OctreeAlign(nn.Module):
     return output if self.return_index else output[0]
 
   def extra_repr(self) -> str:
-    return 'depth={}'.format(self.depth)
+    return f'depth={self.depth}'

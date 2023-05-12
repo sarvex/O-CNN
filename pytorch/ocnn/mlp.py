@@ -34,12 +34,12 @@ class MLP(torch.nn.Module):
     super().__init__()
 
     layers = [layer(in_features, hidden_features, act)]
-    for _ in range(hidden_layers):
-      layers.append(layer(hidden_features, hidden_features, act))
+    layers.extend(
+        layer(hidden_features, hidden_features, act)
+        for _ in range(hidden_layers))
     layers.append(FC(hidden_features, out_features, act=torch.nn.Identity()))
 
     self.layers = torch.nn.Sequential(*layers)
 
   def forward(self, input):
-    output = self.layers(input)
-    return output
+    return self.layers(input)

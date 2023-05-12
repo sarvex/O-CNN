@@ -97,7 +97,7 @@ class CompletionResnet:
     with tf.variable_scope('ocnn_decoder', reuse=reuse):
       # init the octree
       with tf.variable_scope('octree_0'):
-        dis = False if flags.channel < 4 else True
+        dis = flags.channel >= 4
         octree = octree_new(1, channel=flags.channel, has_displace=dis)
       with tf.variable_scope('octree_1'):
         octree = octree_grow(octree, target_depth=1, full_octree=True)

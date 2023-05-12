@@ -14,9 +14,8 @@ class Octree2ColFunction(Function):
     ctx.nempty = nempty
 
     data_in = data_in.contiguous()
-    data_out = ocnn.nn.octree2col(
-        data_in, octree, depth, kernel_size, stride, nempty)
-    return data_out
+    return ocnn.nn.octree2col(data_in, octree, depth, kernel_size, stride,
+                              nempty)
 
   @staticmethod
   def backward(ctx, grad_in):
@@ -37,9 +36,8 @@ class Col2OctreeFunction(Function):
     ctx.nempty = nempty
 
     data_in = data_in.contiguous()
-    data_out = ocnn.nn.col2octree(
-        data_in, octree, depth, kernel_size, stride, nempty)
-    return data_out
+    return ocnn.nn.col2octree(data_in, octree, depth, kernel_size, stride,
+                              nempty)
 
   @staticmethod
   def backward(ctx, grad_in):
@@ -65,8 +63,7 @@ class Octree2ColBase(nn.Module):
     self.nempty = nempty
 
   def extra_repr(self) -> str:
-    return 'depth={}, kernel_size={}, stride={}, nempty={}'.format(
-        self.depth, self.kernel_size, self.stride, self.nempty)
+    return f'depth={self.depth}, kernel_size={self.kernel_size}, stride={self.stride}, nempty={self.nempty}'
 
 
 class Octree2Col(Octree2ColBase):

@@ -11,8 +11,7 @@ class OctreePadFunction(Function):
     ctx.depth = depth
 
     data_in = data_in.contiguous()
-    data_out = ocnn.nn.octree_pad(data_in, octree, depth, val)
-    return data_out
+    return ocnn.nn.octree_pad(data_in, octree, depth, val)
 
   @staticmethod
   def backward(ctx, grad_in):
@@ -29,8 +28,7 @@ class OctreeDepadFunction(Function):
     ctx.depth = depth
 
     data_in = data_in.contiguous()
-    data_out = ocnn.nn.octree_depad(data_in, octree, depth)
-    return data_out
+    return ocnn.nn.octree_depad(data_in, octree, depth)
 
   @staticmethod
   def backward(ctx, grad_in):
@@ -56,7 +54,7 @@ class OctreePad(nn.Module):
     return octree_pad(data_in, octree, self.depth, self.val)
 
   def extra_repr(self) -> str:
-    return 'depth={}, val={}'.format(self.depth, self.val)
+    return f'depth={self.depth}, val={self.val}'
 
 
 class OctreeDepad(nn.Module):
@@ -68,4 +66,4 @@ class OctreeDepad(nn.Module):
     return octree_depad(data_in, octree, self.depth)
 
   def extra_repr(self) -> str:
-    return 'depth={}'.format(self.depth)
+    return f'depth={self.depth}'

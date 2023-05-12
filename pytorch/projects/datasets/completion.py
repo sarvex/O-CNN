@@ -31,8 +31,7 @@ class ScanOctree:
   def __call__(self, octree, idx):
     if self.scan:
       scan_axis = self.generate_scan_axis(idx)
-      partial_octree = ocnn.octree_scan(octree, scan_axis)
-      return partial_octree
+      return ocnn.octree_scan(octree, scan_axis)
     else:
       return octree
 

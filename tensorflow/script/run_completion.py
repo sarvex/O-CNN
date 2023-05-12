@@ -118,7 +118,7 @@ class CompletionSolver(TFSolver):
     with tf.Session(config=config) as sess:
       # restore and initialize
       self.initialize(sess)
-      print('Load check point: ' + self.flags.ckpt)
+      print(f'Load check point: {self.flags.ckpt}')
       tf_saver.restore(sess, self.flags.ckpt)
       logdir = self.flags.logdir
       tf.summary.FileWriter(logdir, sess.graph)

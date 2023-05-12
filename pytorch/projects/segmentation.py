@@ -9,14 +9,12 @@ from datasets import get_scannet_dataset
 
 def loss_function(logit, label):
   criterion = torch.nn.CrossEntropyLoss()
-  loss = criterion(logit, label.long())
-  return loss
+  return criterion(logit, label.long())
 
 
 def accuracy(logit, label):
   pred = logit.argmax(dim=1)
-  accu = pred.eq(label).float().mean()
-  return accu
+  return pred.eq(label).float().mean()
 
 
 def IoU_per_shape(logit, label, class_num):
@@ -52,11 +50,10 @@ class SegSolver(Solver):
   def get_dataset(self, flags):
     if flags.name.lower() == 'scannet':
       return get_scannet_dataset(flags)
-    else:
-      transform = ocnn.TransformCompose(flags)
-      dataset = Dataset(flags.location, flags.filelist, transform, 
-                        in_memory=flags.in_memory)
-      return dataset, ocnn.collate_octrees
+    transform = ocnn.TransformCompose(flags)
+    dataset = Dataset(flags.location, flags.filelist, transform, 
+                      in_memory=flags.in_memory)
+    return dataset, ocnn.collate_octrees
 
   def parse_batch(self, batch):
     octree = batch['octree'].cuda()

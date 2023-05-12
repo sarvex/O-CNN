@@ -49,8 +49,6 @@ def trans_func(data_in, octree, d0, d1, training):
           if d == d0:
             data = octree_conv1x1_bn(data, channel1, training)
           data = octree_tile(data, octree, d)
-    else:        # do nothing
-      pass
   return data
 
 def trans_func(data_in, octree, d0, d1, training, upsample):
@@ -72,13 +70,11 @@ def trans_func(data_in, octree, d0, d1, training, upsample):
           if d == d0:
             data = octree_conv1x1_bn(data, channel1, training)
           data = OctreeUpsample(upsample)(data, octree, d)
-    else:        # do nothing
-      pass
   return data
 
 def transitions(data, octree, depth, training, upsample='neareast'):
   num = len(data)
-  features = [[0]*num for i in range(num + 1)]
+  features = [[0]*num for _ in range(num + 1)]
   for i in range(num):
     for j in range(num + 1):
       d0, d1 = depth - i, depth - j
@@ -93,7 +89,7 @@ def transitions(data, octree, depth, training, upsample='neareast'):
 
 class HRNet:
   def __init__(self, flags):
-    self.tensors = dict()
+    self.tensors = {}
     self.flags = flags
 
   def network(self, octree, training, mask=None, reuse=False):
@@ -151,9 +147,8 @@ class HRNet:
       if mask is not None:
         conv6 = tf.boolean_mask(conv6, mask, axis=2)
       feature = tf.concat([feature, conv6], axis=1)
-    else:
-      if mask is not None:
-        feature = tf.boolean_mask(feature, mask, axis=2)
+    elif mask is not None:
+      feature = tf.boolean_mask(feature, mask, axis=2)
 
     # feature = octree_conv1x1_bn_relu(feature, 1024, training=training)
     with tf.variable_scope('predict_%d' % depth_out):
@@ -182,7 +177,7 @@ class HRNet:
 
 
   def points_feat(self, inputs, octree):
-    data = [t for t in inputs]
+    data = list(inputs)
     depth, factor, num = 5, self.flags.factor, len(inputs)
     assert(self.flags.depth >= depth)
     for i in range(1, num):
@@ -190,11 +185,10 @@ class HRNet:
         for j in range(i):
           d = depth - i + j
           data[i] = OctreeUpsample(self.flags.upsample)(data[i], octree, d)
-    feature = tf.concat(data, axis=1)  # the resolution is depth-5
-    return feature
+    return tf.concat(data, axis=1)
 
   def cls_header(self, inputs, octree, nout, training):
-    data = [t for t in inputs]
+    data = list(inputs)
     channel = [int(t.shape[1]) for t in inputs]
     depth, factor, num = 5, self.flags.factor, len(inputs)
     assert(self.flags.depth >= depth)
@@ -214,7 +208,7 @@ class HRNet:
     #   conv = octree_conv1x1_bn_relu(conv, 512 * factor, training)
     with tf.variable_scope("fc1"):
       conv = octree_conv1x1_bn_relu(features, 512 * factor, training)
-      
+
     fc1 = octree_global_pool(conv, octree, depth=3)
     self.tensors['fc1'] = fc1
     if self.flags.dropout[0]:

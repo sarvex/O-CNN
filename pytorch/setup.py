@@ -17,7 +17,7 @@ def build_octree():
   octree_ext = os.path.join(octree_dir, 'external/octree-ext')
   if not os.path.exists(octree_ext):
     url = 'https://github.com/wang-ps/octree-ext.git'
-    cmd = 'git clone --recursive {} {}'.format(url, octree_ext)
+    cmd = f'git clone --recursive {url} {octree_ext}'
     print(cmd)
     os.system(cmd)
 
@@ -26,9 +26,7 @@ def build_octree():
     shutil.rmtree(octree_build, ignore_errors=True)
 
   x64 = '-A x64' if sys.platform == 'win32' else ''
-  cmd = 'mkdir {} && cd {} && cmake .. -DABI=ON -DKEY64=ON {} && ' \
-        'cmake --build . --config Release && ./octree_test'.format(
-            octree_build, octree_build, x64)
+  cmd = f'mkdir {octree_build} && cd {octree_build} && cmake .. -DABI=ON -DKEY64=ON {x64} && cmake --build . --config Release && ./octree_test'
   print(cmd)
   os.system(cmd)
   
@@ -39,8 +37,10 @@ if "--build_octree" in sys.argv:
 
 # builid ocnn
 src = './cpp'  # '{}/cpp'.format(curr_dir)
-sources = ['{}/{}'.format(src, cpp) for cpp in os.listdir(src)
-           if cpp.endswith('.cpp') or cpp.endswith('.cu')]
+sources = [
+    f'{src}/{cpp}' for cpp in os.listdir(src)
+    if cpp.endswith('.cpp') or cpp.endswith('.cu')
+]
 
 setup(
     name='ocnn',

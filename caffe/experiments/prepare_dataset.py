@@ -116,14 +116,13 @@ def shapenet_convert_points_to_octree_ae():
               '04379243', '04401088', '04530566']
 
   for i in range(0, len(category)):
-    print('Processing ' + category[i])
+    print(f'Processing {category[i]}')
     points_category = os.path.join(points_folder, category[i])
     octree_category = os.path.join(octree_folder, category[i])
 
     # generate the datalist for octree.exe
     filename_points = os.listdir(points_category)
-    filename_list = os.path.join(
-        datalist_folder, category[i] + '_points_list.txt')
+    filename_list = os.path.join(datalist_folder, f'{category[i]}_points_list.txt')
     with open(filename_list, 'w') as f:
       for item in filename_points:
         f.write('%s/%s\n' % (points_category, item))
@@ -149,51 +148,65 @@ def shapenet_lmdb_ae():
   category = ['02691156', '02828884', '02933112', '02958343', '03001627',
               '03211117', '03636649', '03691459', '04090263', '04256520',
               '04379243', '04401088', '04530566']
-  
+
   shapenet_convert_points_to_octree_ae()
 
   # generate datalist for octree
   filename_octree_train = os.path.join(datalist_folder, 'octree_train.txt')
   filename_octree_train_aug = os.path.join(datalist_folder, 'octree_train_aug.txt')
   filename_octree_test = os.path.join(datalist_folder, 'octree_test.txt')
-  file_octree_train = open(filename_octree_train, 'w')
-  file_octree_train_aug = open(filename_octree_train_aug, 'w')
-  file_octree_test = open(filename_octree_test, 'w')
+  with open(filename_octree_train, 'w') as file_octree_train:
+    file_octree_train_aug = open(filename_octree_train_aug, 'w')
+    file_octree_test = open(filename_octree_test, 'w')
 
-  for i in range(0, len(category)):
-    path_img  = os.path.join(img_folder, category[i])
-    path_point = os.path.join(points_folder, category[i])
-    filename_img = sorted(os.listdir(path_img))
-    filename_pc = sorted(os.listdir(path_point))
-    filename = [val for val in filename_img if val + '.points' in filename_pc]
+    for i in range(0, len(category)):
+      path_img  = os.path.join(img_folder, category[i])
+      path_point = os.path.join(points_folder, category[i])
+      filename_img = sorted(os.listdir(path_img))
+      filename_pc = sorted(os.listdir(path_point))
+      filename = [val for val in filename_img if f'{val}.points' in filename_pc]
 
-    for item in filename[:int(len(filename) * 0.8)]:
-      file_octree_train.write('%s/%s_7_2_000.octree %d\n' % (category[i], item, i))
-    for item in filename[int(len(filename) * 0.8):]:
-      file_octree_test.write('%s/%s_7_2_000.octree %d\n' % (category[i], item, i))
-    for item in filename[:int(len(filename) * 0.8)]:
-      file_octree_train_aug.write('%s/%s_7_2_000.octree %d\n' % (category[i], item, i))
-      file_octree_train_aug.write('%s/%s_7_2_001.octree %d\n' % (category[i], item, i))
-      file_octree_train_aug.write('%s/%s_7_2_011.octree %d\n' % (category[i], item, i))
+      for item in filename[:int(len(filename) * 0.8)]:
+        file_octree_train.write('%s/%s_7_2_000.octree %d\n' % (category[i], item, i))
+      for item in filename[int(len(filename) * 0.8):]:
+        file_octree_test.write('%s/%s_7_2_000.octree %d\n' % (category[i], item, i))
+      for item in filename[:int(len(filename) * 0.8)]:
+        file_octree_train_aug.write('%s/%s_7_2_000.octree %d\n' % (category[i], item, i))
+        file_octree_train_aug.write('%s/%s_7_2_001.octree %d\n' % (category[i], item, i))
+        file_octree_train_aug.write('%s/%s_7_2_011.octree %d\n' % (category[i], item, i))
 
-  file_octree_train.close()
   file_octree_test.close()
   file_octree_train_aug.close()
 
 
   # generate lmdb for octree
   print('Generate octree lmdb ...')
-  cmds = [converter, octree_folder + '/', filename_octree_train, lmdb_folder + '/octree_train_lmdb']
+  cmds = [
+      converter,
+      f'{octree_folder}/',
+      filename_octree_train,
+      f'{lmdb_folder}/octree_train_lmdb',
+  ]
   cmd = ' '.join(cmds)
   print(cmd)
   os.system(cmd)
 
-  cmds = [converter, octree_folder + '/', filename_octree_train_aug, lmdb_folder + '/octree_train_aug_lmdb']
+  cmds = [
+      converter,
+      f'{octree_folder}/',
+      filename_octree_train_aug,
+      f'{lmdb_folder}/octree_train_aug_lmdb',
+  ]
   cmd = ' '.join(cmds)
   print(cmd)
   os.system(cmd)
 
-  cmds = [converter, octree_folder + '/', filename_octree_test, lmdb_folder + '/octree_test_lmdb']
+  cmds = [
+      converter,
+      f'{octree_folder}/',
+      filename_octree_test,
+      f'{lmdb_folder}/octree_test_lmdb',
+  ]
   cmd = ' '.join(cmds)
   print(cmd)
   os.system(cmd)
@@ -201,43 +214,49 @@ def shapenet_lmdb_ae():
   # generate datalist for image
   filename_octree_train = os.path.join(datalist_folder, 'octree_train_shuffle.txt')
   filename_img_train = os.path.join(datalist_folder, 'img_train_shuffle.txt')
-  file_img_train = open(filename_img_train, 'w')
-  file_octree_train = open(filename_octree_train, 'r')  
-  lines = file_octree_train.readlines()
-  rand_perm = []
-  view_num = 24
-  for i in range(0, len(lines)):
-    rand_perm.append(numpy.random.permutation(view_num))
-  for v in range(0, view_num):
-    for i in range(0, len(lines)):
-      line_img = lines[i].replace('/', '/') \
-                         .replace('_7_2_000.octree',
-                                  '/rendering/%02d.png' % rand_perm[i][v])
-      file_img_train.write(line_img)
-  file_octree_train.close()
-  file_img_train.close()
-
+  with open(filename_img_train, 'w') as file_img_train:
+    with open(filename_octree_train, 'r') as file_octree_train:
+      lines = file_octree_train.readlines()
+      view_num = 24
+      rand_perm = [numpy.random.permutation(view_num) for _ in range(0, len(lines))]
+      for v in range(0, view_num):
+        for i in range(0, len(lines)):
+          line_img = lines[i].replace('/', '/') \
+                             .replace('_7_2_000.octree',
+                                      '/rendering/%02d.png' % rand_perm[i][v])
+          file_img_train.write(line_img)
   filename_oct_test = os.path.join(datalist_folder, 'octree_test_shuffle.txt')
   filename_img_test = os.path.join(datalist_folder, 'img_test_shuffle.txt')
-  file_img_test = open(filename_img_test, 'w')
-  file_oct_test = open(filename_oct_test, 'r')
-  lines = file_oct_test.readlines()
-  for line in lines:
-    line_img = line.replace('/', '/').replace('_7_2_000.octree', '/rendering/00.png')
-    file_img_test.write(line_img)
-  file_img_test.close()
+  with open(filename_img_test, 'w') as file_img_test:
+    file_oct_test = open(filename_oct_test, 'r')
+    lines = file_oct_test.readlines()
+    for line in lines:
+      line_img = line.replace('/', '/').replace('_7_2_000.octree', '/rendering/00.png')
+      file_img_test.write(line_img)
   file_oct_test.close()
 
   # generate lmdb for image2shape
   print('Generate image lmdb ...')
-  cmds = [convert_image, img_folder+'/', filename_img_train, lmdb_folder+'/img_train_lmdb', 
-          '--noshuffle', '--check_size']
+  cmds = [
+      convert_image,
+      f'{img_folder}/',
+      filename_img_train,
+      f'{lmdb_folder}/img_train_lmdb',
+      '--noshuffle',
+      '--check_size',
+  ]
   cmd = ' '.join(cmds)
   print(cmd)
   os.system(cmd)
 
-  cmds = [convert_image, img_folder+'/', filename_img_test, lmdb_folder+'/img_test_lmdb', 
-          '--noshuffle', '--check_size']
+  cmds = [
+      convert_image,
+      f'{img_folder}/',
+      filename_img_test,
+      f'{lmdb_folder}/img_test_lmdb',
+      '--noshuffle',
+      '--check_size',
+  ]
   cmd = ' '.join(cmds)
   print(cmd)
   os.system(cmd)
@@ -248,11 +267,11 @@ def clean_off_file(filename):
   with open(filename) as fid:
     file_str = fid.read()
   # fix the file
-  if file_str[0:3] != 'OFF':
-    print('Error: not an OFF file: ' + filename)
-  elif file_str[0:4] != 'OFF\n':
-    print('Info: fix an OFF file: '  + filename)
-    new_str = file_str[0:3] + '\n' + file_str[3:]
+  if file_str[:3] != 'OFF':
+    print(f'Error: not an OFF file: {filename}')
+  elif file_str[:4] != 'OFF\n':
+    print(f'Info: fix an OFF file: {filename}')
+    new_str = file_str[:3] + '\n' + file_str[3:]
     with open(filename, 'w') as f_rewrite:
       f_rewrite.write(new_str)
 
@@ -309,19 +328,19 @@ def m40_convert_mesh_to_points(root_folder='dataset/ModelNet40'):
   for folder in folders:
     for subfolder in ['train', 'test']:
       curr_folder = os.path.join(root_folder, folder, subfolder)
-      cmd = '%s %s 14' % (virtual_scanner,  curr_folder)
+      cmd = f'{virtual_scanner} {curr_folder} 14'
       print(cmd)
       os.system(cmd)
-      
+
   # move points
-  m40_move_files(root_folder, root_folder + '.points', 'points')
+  m40_move_files(root_folder, f'{root_folder}.points', 'points')
 
 
 def m40_convert_points_to_octree(root_folder, depth=5, adaptive=0, node_dis=0):
   folders = os.listdir(root_folder)
   for folder in folders:
     for subfolder in ['train', 'test']:
-      curr_folder = os.path.join(root_folder, folder, subfolder)      
+      curr_folder = os.path.join(root_folder, folder, subfolder)
       # write filelist to disk
       filenames = os.listdir(curr_folder)
       filelist_name = os.path.join(curr_folder, 'list.txt')
@@ -331,7 +350,8 @@ def m40_convert_points_to_octree(root_folder, depth=5, adaptive=0, node_dis=0):
             fid.write(os.path.join(curr_folder, filename) + '\n')
       # run octree
       octree_folder = root_folder[:-6] + 'octree.%d' % depth
-      if adaptive == 1: octree_folder = octree_folder + '.adaptive'
+      if adaptive == 1:
+        octree_folder = f'{octree_folder}.adaptive'
       output_path = os.path.join(octree_folder, folder, subfolder)
       if not os.path.exists(output_path): os.makedirs(output_path)
       cmd = '%s --filenames %s --output_path %s --depth %d --adaptive %d --node_dis %d --axis z' % \
@@ -343,7 +363,7 @@ def m40_convert_points_to_octree(root_folder, depth=5, adaptive=0, node_dis=0):
 def m40_simplify_points(root_folder='dataset/ModelNet40.points', resolution=64):
   # rename and backup the original folders
   root_folder = os.path.join(abs_path, root_folder)
-  original_folder = root_folder + ".dense"
+  original_folder = f"{root_folder}.dense"
   if os.path.exists(root_folder):
     os.rename(root_folder, original_folder)
 
@@ -379,13 +399,12 @@ def m40_generate_ocnn_lmdb(depth=5):
     train = folder == 'train'
     shuffle = '--shuffle' if train else '--noshuffle'
     filelist, idx = m40_get_filelist(octree_folder, train=train, suffix='octree')
-    filename = os.path.join(root_folder, 'm40_%s_octree_list.txt' % folder)
+    filename = os.path.join(root_folder, f'm40_{folder}_octree_list.txt')
     with open(filename, 'w') as fid:
       for i in range(len(filelist)):
         fid.write('%s %d\n' % (filelist[i], idx[i]))
     lmdb_name = os.path.join(root_folder, 'm40_%d_2_12_%s_lmdb' % (depth, folder))
-    cmd = '%s %s %s/ %s %s ' % \
-          (converter, shuffle, octree_folder, filename, lmdb_name)
+    cmd = f'{converter} {shuffle} {octree_folder}/ {filename} {lmdb_name} '
     print(cmd)
     os.system(cmd)
 
@@ -402,13 +421,12 @@ def m40_generate_aocnn_lmdb(depth=5):
     train = folder == 'train'
     shuffle = '--shuffle' if train else '--noshuffle'
     filelist, idx = m40_get_filelist(octree_folder, train=train, suffix='octree')
-    filename = os.path.join(root_folder, 'm40_%s_adaptive_octree_list.txt' % folder)
+    filename = os.path.join(root_folder, f'm40_{folder}_adaptive_octree_list.txt')
     with open(filename, 'w') as fid:
       for i in range(len(filelist)):
         fid.write('%s %d\n' % (filelist[i], idx[i]))
     lmdb_name = os.path.join(root_folder, 'm40_%d_adaptive_2_12_%s_lmdb' % (depth, folder))
-    cmd = '%s %s %s/ %s %s ' % \
-          (converter, shuffle, octree_folder, filename, lmdb_name)
+    cmd = f'{converter} {shuffle} {octree_folder}/ {filename} {lmdb_name} '
     print(cmd)
     os.system(cmd)
 
@@ -420,13 +438,12 @@ def m40_generate_ocnn_points_tfrecords():
     train = folder == 'train'
     shuffle = '--shuffle true' if folder == 'train' else ''
     filelist, idx = m40_get_filelist(points_folder, train=train, suffix='points')
-    filename = os.path.join(root_folder, 'm40_%s_points_list.txt' % folder)
+    filename = os.path.join(root_folder, f'm40_{folder}_points_list.txt')
     with open(filename, 'w') as fid:
       for i in range(len(filelist)):      
         fid.write('%s %d\n' % (filelist[i], idx[i]))
-    tfrecords_name = os.path.join(root_folder, 'm40_%s_points.tfrecords' % folder)
-    cmd = 'python %s %s --file_dir %s --list_file %s --records_name %s' % \
-          (converter, shuffle, points_folder, filename, tfrecords_name)
+    tfrecords_name = os.path.join(root_folder, f'm40_{folder}_points.tfrecords')
+    cmd = f'python {converter} {shuffle} --file_dir {points_folder} --list_file {filename} --records_name {tfrecords_name}'
     print(cmd)
     os.system(cmd)
 
@@ -443,13 +460,12 @@ def m40_generate_ocnn_octree_tfrecords(depth=5):
     train = folder == 'train'
     shuffle = '--shuffle true' if folder == 'train' else ''
     filelist, idx = m40_get_filelist(octree_folder, train=train, suffix='octree')
-    filename = os.path.join(root_folder, 'm40_%s_octree_list.txt' % folder)
+    filename = os.path.join(root_folder, f'm40_{folder}_octree_list.txt')
     with open(filename, 'w') as fid:
       for i in range(len(filelist)):
-        fid.write('%s %d\n' % (filelist[i], idx[i]))    
+        fid.write('%s %d\n' % (filelist[i], idx[i]))
     tfname = os.path.join(root_folder, 'm40_%d_2_12_%s_octree.tfrecords' % (depth, folder))
-    cmd = 'python %s %s --file_dir %s --list_file %s --records_name %s' % \
-          (converter, shuffle, octree_folder, filename, tfname)
+    cmd = f'python {converter} {shuffle} --file_dir {octree_folder} --list_file {filename} --records_name {tfname}'
     print(cmd)
     os.system(cmd)
 
@@ -474,4 +490,4 @@ if __name__ == '__main__':
   elif cmd == 'aocnn_ae_compute_chamfer':
     aocnn_ae_compute_chamfer()
   else:
-    print('Unsupported command:' + cmd)
+    print(f'Unsupported command:{cmd}')

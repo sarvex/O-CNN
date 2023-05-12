@@ -77,7 +77,7 @@ class AutoEncoderOcnn:
     channel = [512, 256, 128, 64, 32, 16, 8]
     with tf.variable_scope('ocnn_decoder', reuse=reuse):
       with tf.variable_scope('octree_0'):
-        displace = False if flags.channel < 4 else True
+        displace = flags.channel >= 4
         octree = octree_new(batch_size=1, channel=flags.channel, has_displace=displace)
       with tf.variable_scope('octree_1'):
         octree = octree_grow(octree, target_depth=1, full_octree=True)
@@ -92,7 +92,7 @@ class AutoEncoderOcnn:
         with tf.variable_scope('depth_%d' % d):
           data = octree_upsample(data, octree, d-1, channel[d], training)
           data = octree_conv_bn_relu(data, octree, d, channel[d], training)        
-        
+
         with tf.variable_scope('predict_%d' % d):
           _, label = predict_label(data, 2, 32, training)
 
@@ -189,7 +189,7 @@ class AutoEncoderResnet:
     channels = [4, 64, 256, 256, 128, 64, 32, 16]
     with tf.variable_scope('ocnn_decoder', reuse=reuse):
       with tf.variable_scope('octree_0'):
-        displace = False if flags.channel < 4 else True
+        displace = flags.channel >= 4
         octree = octree_new(batch_size=1, channel=flags.channel, has_displace=displace)
       with tf.variable_scope('octree_1'):
         octree = octree_grow(octree, target_depth=1, full_octree=True)
@@ -201,7 +201,7 @@ class AutoEncoderResnet:
         for i in range(0, flags.resblock_num):
           with tf.variable_scope('resblock_%d_%d' % (d, i)):
             data = octree_resblock(data, octree, d, channels[d], 1, training)
-        
+
         with tf.variable_scope('predict_%d' % d):
           _, label = predict_label(data, 2, 32, training)
 
@@ -217,7 +217,7 @@ class AutoEncoderResnet:
             signal = octree_mask(signal, label, mask=0)
           with tf.variable_scope('octree_%d' % d, reuse=True):
             octree = octree_set_property(octree, signal, property_name="feature", depth=depth)
-        
+
         if d < depth:
           with tf.variable_scope('up_%d' % d):
             data = octree_deconv_bn_relu(data, octree, d, channels[d-1], training,
@@ -230,5 +230,3 @@ def make_autoencoder(flags):
     return AutoEncoderOcnn(flags)
   elif flags.name == 'resnet':
     return AutoEncoderResnet(flags)
-  else:
-    pass

@@ -31,12 +31,12 @@ def download_m40():
   if not os.path.exists(root_folder):
     os.makedirs(root_folder)
   url = 'http://modelnet.cs.princeton.edu/ModelNet40.zip'
-  cmd = 'wget %s -O %s/ModelNet40.zip' % (url, root_folder)
+  cmd = f'wget {url} -O {root_folder}/ModelNet40.zip'
   print(cmd)
   os.system(cmd)
 
   # unzip
-  cmd = 'unzip %s/ModelNet40.zip -d %s' % (root_folder, root_folder)
+  cmd = f'unzip {root_folder}/ModelNet40.zip -d {root_folder}'
   print(cmd)
   os.system(cmd)
 
@@ -47,12 +47,12 @@ def download_m40_points():
     os.makedirs(root_folder)
   url = 'https://www.dropbox.com/s/m233s9eza3acj2a/ModelNet40.points.zip?dl=0'
   zip_file = os.path.join(root_folder, 'ModelNet40.points.zip')
-  cmd = 'wget %s -O %s' % (url, zip_file)
+  cmd = f'wget {url} -O {zip_file}'
   print(cmd)
   os.system(cmd)
 
   # unzip
-  cmd = 'unzip %s -d %s/ModelNet40.points' % (zip_file, root_folder)
+  cmd = f'unzip {zip_file} -d {root_folder}/ModelNet40.points'
   print(cmd)
   os.system(cmd)
 
@@ -62,11 +62,11 @@ def clean_off_file(filename):
   with open(filename) as fid:
     file_str = fid.read()
   # fix the file
-  if file_str[0:3] != 'OFF':
-    print('Error: not an OFF file: ' + filename)
-  elif file_str[0:4] != 'OFF\n':
-    print('Info: fix an OFF file: ' + filename)
-    new_str = file_str[0:3] + '\n' + file_str[3:]
+  if file_str[:3] != 'OFF':
+    print(f'Error: not an OFF file: {filename}')
+  elif file_str[:4] != 'OFF\n':
+    print(f'Info: fix an OFF file: {filename}')
+    new_str = file_str[:3] + '\n' + file_str[3:]
     with open(filename, 'w') as f_rewrite:
       f_rewrite.write(new_str)
 
@@ -125,18 +125,18 @@ def convert_mesh_to_points():
   for folder in folders:
     for subfolder in ['train', 'test']:
       curr_folder = os.path.join(mesh_folder, folder, subfolder)
-      cmd = '%s %s 14' % (virtual_scanner,  curr_folder)
+      cmd = f'{virtual_scanner} {curr_folder} 14'
       print(cmd)
       os.system(cmd)
 
   # move points
-  move_files(mesh_folder, mesh_folder + '.points', 'points')
+  move_files(mesh_folder, f'{mesh_folder}.points', 'points')
 
 
 def simplify_points(resolution=64):
   # rename and backup the original folders
   points_folder = os.path.join(root_folder, 'ModelNet40.points')
-  original_folder = points_folder + ".dense"
+  original_folder = f"{points_folder}.dense"
   if os.path.exists(points_folder):
     os.rename(points_folder, original_folder)
 
@@ -188,8 +188,7 @@ def transform_points():
         fid.write(mat)
 
       # run transform points
-      cmd = '%s --filenames %s --output_path %s --mat %s' % \
-            (transform, filelist_name, output_path, mat_name)
+      cmd = f'{transform} --filenames {filelist_name} --output_path {output_path} --mat {mat_name}'
       print(cmd)
       os.system(cmd)
       os.remove(filelist_name)
@@ -202,9 +201,9 @@ def generate_points_filelist():
   for folder in ['train', 'test']:
     train = folder == 'train'
     filelist, idx = get_filelist(points_folder, train=train, suffix='points')
-    prefix = 'm40_' + folder
-    filename = os.path.join(root_folder, '%s_points_list.txt' % prefix)
-    print('Save to %s' % filename)
+    prefix = f'm40_{folder}'
+    filename = os.path.join(root_folder, f'{prefix}_points_list.txt')
+    print(f'Save to {filename}')
     with open(filename, 'w') as fid:
       for i in range(len(filelist)):
         fid.write('%s %d\n' % (filelist[i], idx[i]))
@@ -217,17 +216,17 @@ def generate_points_filelist_ratios():
   for folder in ['train', 'test']:
     train = folder == 'train'
     for ratio in ratios:
-      if train == False and ratio < 1:
+      if not train and ratio < 1:
         continue
       prefix = 'm40_y_%.02f_%s' % (ratio, folder)
-      filename = os.path.join(root_folder, '%s_points_list.txt' % prefix)
+      filename = os.path.join(root_folder, f'{prefix}_points_list.txt')
       filelist, idx = get_filelist(points_folder, train=train,
                                    suffix='points', ratio=ratio)
-      print('Save to %s' % filename)
+      print(f'Save to {filename}')
       with open(filename, 'w') as fid:
         for i in range(len(filelist)):
           fid.write('%s %d\n' % (filelist[i], idx[i]))
 
 
 if __name__ == '__main__':
-  eval('%s()' % args.run)
+  eval(f'{args.run}()')

@@ -10,5 +10,5 @@ tf.enable_eager_execution()
 for i in range(1, 7):
   name = 'octree_%d' % i
   octree = octree_samples(name)
-  with open(name + '.octree', 'wb') as fid:
+  with open(f'{name}.octree', 'wb') as fid:
     fid.write(octree.numpy())

@@ -37,12 +37,12 @@ def download_filelists():
 
   # download
   url = 'https://www.dropbox.com/s/aeizpy34zhozrcw/scannet_filelist.zip?dl=0'
-  cmd = 'wget %s -O %s' % (url, zip_file)
+  cmd = f'wget {url} -O {zip_file}'
   print(cmd)
   os.system(cmd)
 
   # unzip
-  cmd = 'unzip %s -d %s' % (zip_file, path_out)
+  cmd = f'unzip {zip_file} -d {path_out}'
   print(cmd)
   os.system(cmd)
 
@@ -58,8 +58,7 @@ def read_ply(filename, compute_normal=True):
   face = np.stack(face['vertex_indices'], axis=0)
 
   nv = vertex_normal(vertex, face) if compute_normal else np.zeros_like(vertex)
-  vertex_with_props = np.concatenate([vertex, nv, props], axis=1)
-  return vertex_with_props
+  return np.concatenate([vertex, nv, props], axis=1)
 
 
 def face_normal(vertex, face):
@@ -140,7 +139,7 @@ def process_scannet():
     curr_path_out = Path(args.path_out) / path_out
     curr_path_out.mkdir(parents=True, exist_ok=True)
 
-    filenames = (Path(args.path_in) / path_in).glob('*/*' + suffix)
+    filenames = (Path(args.path_in) / path_in).glob(f'*/*{suffix}')
     for filename in filenames:
       pointcloud = read_ply(filename)
       # Make sure alpha value is meaningless.
@@ -148,7 +147,7 @@ def process_scannet():
 
       # Load label file
       label = np.zeros((pointcloud.shape[0], 1))
-      filename_label = filename.parent / (filename.stem + '.labels.ply')
+      filename_label = filename.parent / f'{filename.stem}.labels.ply'
       if filename_label.is_file():
         label_data = read_ply(filename_label, compute_normal=False)
         # Sanity check that the pointcloud and its label has same vertices.
@@ -156,13 +155,13 @@ def process_scannet():
         assert np.allclose(pointcloud[:, :3], label_data[:, :3])
 
         label = label_data[:, -1:]
-        filename_out = curr_path_out / (filename.name[:-len(suffix)] + '.txt')
+        filename_out = curr_path_out / f'{filename.name[:-len(suffix)]}.txt'
         np.savetxt(filename_out, label, fmt='%d')
         if label_remap:  # remap the files
           for i in range(label.shape[0]):
             label[i] = label_dict.get(int(label[i]), 0)
 
-      filename_out = curr_path_out / (filename.name[:-len(suffix)] + '.ply')
+      filename_out = curr_path_out / f'{filename.name[:-len(suffix)]}.ply'
       processed = np.concatenate((pointcloud[:, :-1], label), axis=-1)
       # save the original file
       save_ply(processed, filename_out)
@@ -209,7 +208,7 @@ def generate_output_seg():
     prob0[inbox_mask] = prob
 
     if 'chunk' in filename_scan:
-      filename_mask = filename_scan + '.mask.npy'
+      filename_mask = f'{filename_scan}.mask.npy'
       mask = np.load(os.path.join(args.path_in, filename_mask))
       prob1 = np.zeros([mask.shape[0], prob0.shape[1]])
       prob1[mask] = prob0
@@ -225,7 +224,7 @@ def generate_output_seg():
     os.makedirs(args.path_out)
 
   for filename, prob in tqdm(probs.items(), ncols=80):
-    filename_label = filename + '.txt'
+    filename_label = f'{filename}.txt'
     label = np.argmax(prob, axis=1)
     for i in range(label.shape[0]):
       label[i] = ilabel_dict[label[i]]
@@ -262,14 +261,11 @@ def calc_iou():
       intsc[k] += np.sum(np.logical_and(pk, lk).astype(np.float32))
       union[k] += np.sum(np.logical_or(pk,  lk).astype(np.float32))
 
-  # iou
-  iou_part = 0
-  for k in class_ids[1:]:
-    iou_part += intsc[k] / (union[k] + 1.0e-10)
+  iou_part = sum(intsc[k] / (union[k] + 1.0e-10) for k in class_ids[1:])
   iou = iou_part / len(class_ids[1:])
   print('Accu: %.6f' % (accu / len(pred_files)))
   print('IoU: %.6f' % iou)
 
 
 if __name__ == '__main__':
-  eval('%s()' % args.run)
+  eval(f'{args.run}()')

@@ -26,7 +26,7 @@ with tf.variable_scope('signal'):
 ## output
 FLAGSS = FLAGS.SOLVER
 test_iter = FLAGSS.test_iter
-output_prefix = FLAGSS.logdir + '/' + os.path.basename(FLAGS.DATA.test.location)
+output_prefix = f'{FLAGSS.logdir}/{os.path.basename(FLAGS.DATA.test.location)}'
 
 # classification features
 fc1 = tensors['fc1']
@@ -56,10 +56,10 @@ def cls_features(sess):
     features1[i, :] = f1
     features2[i, :] = f2
     labels[i] = l
-  
-  np.save(output_prefix + '_fc1', features1)
-  np.save(output_prefix + '_fc2', features2)
-  np.save(output_prefix + '_label', labels)
+
+  np.save(f'{output_prefix}_fc1', features1)
+  np.save(f'{output_prefix}_fc2', features2)
+  np.save(f'{output_prefix}_label', labels)
 
 def seg_features(sess):
   print('Segmentation features...')
@@ -85,4 +85,4 @@ with tf.Session(config=config) as sess:
   elif FLAGSS.run == 'seg':
     seg_features(sess)
   else:
-    print('Error, unsupported SOLVER.run: ' + FLAGSS.run)
+    print(f'Error, unsupported SOLVER.run: {FLAGSS.run}')

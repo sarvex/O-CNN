@@ -44,7 +44,7 @@ class Octree2ColTest(unittest.TestCase):
           y = y + dy - 1
           x = x + dx - 1
 
-          if -1 < x and x < 2 and -1 < y and y < 2 and -1 < z and z < 2:
+          if x > -1 and x < 2 and y > -1 and y < 2 and z > -1 and z < 2:
             val_out[(c*kernel + k)*top_h + h] = val_in[c*btm_h + x*4 + y*2 + z]
 
     return data_out
@@ -54,14 +54,14 @@ class Octree2ColTest(unittest.TestCase):
     vi = [0, 2, 3, 6, 1]
     kernel_size = [[3, 3, 3], [2, 2, 2], [3, 1, 1], [3, 3, 1], [1, 1, 1]]
 
-    for i in range(len(stride)):
+    for item in stride:
       for j in range(len(vi)):
-        out_gt = self.forward(kernel_size[j], stride[i], self.idx_maps[vi[j]])
+        out_gt = self.forward(kernel_size[j], item, self.idx_maps[vi[j]])
 
         octree = self.octree.cuda()
         data_in = torch.from_numpy(self.data_in).cuda()
-        data_out = ocnn.octree2col(data_in, octree,
-                                   self.depth, kernel_size[j], stride[i], False)
+        data_out = ocnn.octree2col(data_in, octree, self.depth, kernel_size[j],
+                                   item, False)
 
         data_out = data_out.cpu().detach().numpy()
         self.assertTrue(np.array_equal(data_out, out_gt))
@@ -71,12 +71,12 @@ class Octree2ColTest(unittest.TestCase):
     vi = [0, 2, 3, 6, 1]
     kernel_size = [[3, 3, 3], [2, 2, 2], [3, 1, 1], [3, 3, 1], [1, 1, 1]]
 
-    for i in range(len(stride)):
+    for item in stride:
       for j in range(len(vi)):
         octree = self.octree.cuda()
         data_in = torch.from_numpy(self.data_in).cuda().requires_grad_()
 
-        params = [data_in, octree, self.depth, kernel_size[j], stride[i], False]
+        params = [data_in, octree, self.depth, kernel_size[j], item, False]
         succ = gradcheck(ocnn.octree2col, params, eps=1.0)
         self.assertTrue(succ)
 
@@ -85,15 +85,15 @@ class Octree2ColTest(unittest.TestCase):
     stride = [1, 2]
     vi = [0, 2, 3, 6, 1]
     kernel_size = [[3, 3, 3], [2, 2, 2], [3, 1, 1], [3, 3, 1], [1, 1, 1]]
-    for i in range(len(stride)):
+    for item in stride:
       for j in range(len(vi)):
         octree = self.octree.cuda()
         data_in = torch.from_numpy(self.data_in).cuda()
-        data_out = ocnn.nn.octree2col(data_in, octree,
-                                      self.depth, kernel_size[j], stride[i], True)
+        data_out = ocnn.nn.octree2col(data_in, octree, self.depth,
+                                      kernel_size[j], item, True)
         data_out = data_out.cpu().detach().numpy()
 
-        out_gt = self.forward(kernel_size[j], stride[i], self.idx_maps[vi[j]])
+        out_gt = self.forward(kernel_size[j], item, self.idx_maps[vi[j]])
         self.assertTrue(np.array_equal(data_out, out_gt))
 
   def test_octree2colP(self):
@@ -111,16 +111,16 @@ class Octree2ColTest(unittest.TestCase):
     data_in2 = data_in.clone().requires_grad_()
 
     # octree2colP = octree2col + depad
-    for i in range(len(stride)):
-      for j in range(len(kernel_size)):
-        out1 = ocnn.octree2col(data1, octree, depth, kernel_size[j], stride[i], False)
-        if stride[i] == 1:
+    for item in stride:
+      for item_ in kernel_size:
+        out1 = ocnn.octree2col(data1, octree, depth, item_, item, False)
+        if item == 1:
           ks, height = out1.size(1), out1.size(2)
           out1 = out1.view(1, -1, height, 1)
           out1 = ocnn.octree_depad(out1, octree, depth)
           out1 = out1.view(channel, ks, -1)
-        out2 = ocnn.octree2col(data_in2, octree, depth, kernel_size[j], stride[i], True)
-        
+        out2 = ocnn.octree2col(data_in2, octree, depth, item_, item, True)
+
         pesudo_grad = torch.rand(out1.shape, dtype=out1.dtype, device=out1.device)
         out1.backward(pesudo_grad, retain_graph=True)
         out2.backward(pesudo_grad, retain_graph=True)

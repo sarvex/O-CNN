@@ -32,12 +32,18 @@ class Points2Octree:
     self.save_pts = save_pts
 
   def __call__(self, points):
-    octree = points2octree(points, depth=self.depth, full_depth=self.full_depth,
-                           node_dis=self.node_dis, node_feature=self.node_feat, 
-                           split_label=self.split_label, adaptive=self.adaptive, 
-                           adp_depth=self.adp_depth, th_normal=self.th_normal,
-                           save_pts=self.save_pts)
-    return octree
+    return points2octree(
+        points,
+        depth=self.depth,
+        full_depth=self.full_depth,
+        node_dis=self.node_dis,
+        node_feature=self.node_feat,
+        split_label=self.split_label,
+        adaptive=self.adaptive,
+        adp_depth=self.adp_depth,
+        th_normal=self.th_normal,
+        save_pts=self.save_pts,
+    )
 
 class NormalizePoints:
   def __init__(self):
@@ -72,9 +78,9 @@ class TransformPoints:
     if self.distort:
       angle = [0, 0, 0]
       for i in range(3):
-        interval = self.interval[i] if self.interval[i] > 1 else 1
+        interval = max(self.interval[i], 1)
         rot_num  = self.angle[i] // interval
-        rnd = tf.random.uniform(shape=[], minval=-rot_num, maxval=rot_num, dtype=tf.int32)        
+        rnd = tf.random.uniform(shape=[], minval=-rot_num, maxval=rot_num, dtype=tf.int32)
         angle[i] = tf.cast(rnd, dtype=tf.float32) * (interval * 3.14159265 / 180.0)
       angle = tf.stack(angle)
 
@@ -82,10 +88,10 @@ class TransformPoints:
       scale = tf.random.uniform(shape=[3], minval=minval, maxval=maxval, dtype=tf.float32)
       if self.uniform_scale:
         scale = tf.stack([scale[0]]*3)
-      
+
       minval, maxval = -self.jitter, self.jitter
       jitter = tf.random.uniform(shape=[3], minval=minval, maxval=maxval, dtype=tf.float32)
-      
+
       minval, maxval = self.dropout[0], self.dropout[1]
       ratio = tf.random.uniform(shape=[], minval=minval, maxval=maxval, dtype=tf.float32)
       minval, maxval = self.drop_dim[0], self.drop_dim[1]
@@ -164,7 +170,7 @@ class DatasetFactory:
     elif flags.dtype == 'octree':
       self.dataset = OctreeDataset(ParseExample(**flags))
     else:
-      print('Error: unsupported datatype ' + flags.dtype)
+      print(f'Error: unsupported datatype {flags.dtype}')
 
   def __call__(self, return_iter=False):
     return self.dataset(

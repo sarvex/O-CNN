@@ -126,7 +126,7 @@ def _update_config(FLAGS, args):
   if 'time' in alias:
     alias = alias.replace('time', datetime.now().strftime('%m%d%H%M')) #%S
   if alias is not '':
-    FLAGS.SOLVER.logdir += '_' + alias
+    FLAGS.SOLVER.logdir += f'_{alias}'
   FLAGS.freeze()
 
 

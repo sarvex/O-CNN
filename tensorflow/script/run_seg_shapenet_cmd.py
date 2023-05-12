@@ -20,8 +20,9 @@ factor = 2
 batch_size = 32
 ckpt = args.ckpt if mode != 'randinit' else '\'\''
 module = 'run_seg_shapenet_finetune.py' if mode != 'randinit' else 'run_seg_shapenet.py'
-script = 'python %s --config configs/seg_hrnet_shapenet_pts.yaml' % module
-if mode != 'randinit': script += ' SOLVER.mode %s ' % mode
+script = f'python {module} --config configs/seg_hrnet_shapenet_pts.yaml'
+if mode != 'randinit':
+  script += f' SOLVER.mode {mode} '
 data = 'dataset/shapenet_segmentation/datasets'
 
 
@@ -58,29 +59,32 @@ for i in range(len(ratios)):
     take = int(math.ceil(train_num[k] * ratio))
 
     cmds = [
-      script,
-      'SOLVER.gpu {},'.format(gpu),
-      'SOLVER.logdir logs/seg/{}/{}_{}/ratio_{:.2f}'.format(alias, cat, names[k], ratio),
-      'SOLVER.max_iter {}'.format(max_iter),
-      'SOLVER.step_size {},{}'.format(step_size1, step_size2),
-      'SOLVER.test_every_iter {}'.format(test_every_iter),
-      'SOLVER.test_iter {}'.format(test_num[k]),
-      'SOLVER.ckpt {}'.format(ckpt),
-      'DATA.train.location {}/{}_train_val.tfrecords'.format(data, cat),
-      'DATA.train.take {}'.format(take),
-      'DATA.test.location {}/{}_test.tfrecords'.format(data, cat),
-      'MODEL.nout {}'.format(seg_num[k]),
-      'MODEL.factor {}'.format(factor),
-      'LOSS.num_class {}'.format(seg_num[k])]
+        script,
+        f'SOLVER.gpu {gpu},',
+        'SOLVER.logdir logs/seg/{}/{}_{}/ratio_{:.2f}'.format(
+            alias, cat, names[k], ratio),
+        f'SOLVER.max_iter {max_iter}',
+        f'SOLVER.step_size {step_size1},{step_size2}',
+        f'SOLVER.test_every_iter {test_every_iter}',
+        f'SOLVER.test_iter {test_num[k]}',
+        f'SOLVER.ckpt {ckpt}',
+        f'DATA.train.location {data}/{cat}_train_val.tfrecords',
+        f'DATA.train.take {take}',
+        f'DATA.test.location {data}/{cat}_test.tfrecords',
+        f'MODEL.nout {seg_num[k]}',
+        f'MODEL.factor {factor}',
+        f'LOSS.num_class {seg_num[k]}',
+    ]
 
     cmd = ' '.join(cmds)
     print('\n', cmd, '\n')
     os.system(cmd)
 
-summary = []
-summary.append('names, ' + ', '.join(names))
-summary.append('train_num, ' + ', '.join([str(x) for x in train_num]))
-summary.append('test_num, ' + ', '.join([str(x) for x in test_num]))
+summary = [
+    'names, ' + ', '.join(names),
+    'train_num, ' + ', '.join([str(x) for x in train_num]),
+    'test_num, ' + ', '.join([str(x) for x in test_num]),
+]
 for i in range(len(ratios)-1, -1, -1):
   ious = [None] * len(categories)  
   for j in range(len(categories)):
@@ -93,7 +97,7 @@ for i in range(len(ratios)-1, -1, -1):
     ious[j] = row[idx]
   summary.append('Ratio:{:.2f}, '.format(ratios[i]) + ', '.join(ious))
 
-with open('logs/seg/{}/summaries.csv'.format(alias), 'w') as fid:
+with open(f'logs/seg/{alias}/summaries.csv', 'w') as fid:
   summ = '\n'.join(summary)
   fid.write(summ)
   # print(summ)

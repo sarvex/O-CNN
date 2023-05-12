@@ -16,10 +16,10 @@ args = parser.parse_args()
 
 for e in tf.train.summary_iterator(args.event):
   has_value = False
-  msg = '{}'.format(e.step)
+  msg = f'{e.step}'
   for v in e.summary.value:
     if args.tag in v.tag:
-      msg = msg + ', {}'.format(v.simple_value)
+      msg = f'{msg}, {v.simple_value}'
       has_value = True
   if has_value: print(msg)
 

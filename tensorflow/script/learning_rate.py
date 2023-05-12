@@ -26,9 +26,7 @@ class StepLR:
   def __call__(self, global_step):
     with tf.variable_scope('step_lr'):
       step_size = list(self.flags.step_size)
-      for i in range(len(step_size), 5): 
-        step_size.append(step_size[-1])
-
+      step_size.extend(step_size[-1] for _ in range(len(step_size), 5))
       steps = step_size
       for i in range(1, 5):
         steps[i] = steps[i-1] + steps[i]
@@ -46,7 +44,7 @@ class LRFactory:
     elif self.flags.lr_type == 'cos':
       self.lr = CosLR(flags)
     else:
-      print('Error, unsupported learning rate: ' + self.flags.lr_type)
+      print(f'Error, unsupported learning rate: {self.flags.lr_type}')
   
   def __call__(self, global_step):
     return self.lr(global_step)

@@ -86,9 +86,9 @@ class OctreeDeconvTest(unittest.TestCase):
     stride = [1, 2]
     kernel_size = [[3, 3, 3], [2, 2, 2], [3, 1, 1], [3, 3, 1], [1, 1, 1]]
 
-    for i in range(len(stride)):
-      for j in range(len(kernel_size)):
-        self.forward_and_backward(kernel_size[j], stride[i])
+    for item in stride:
+      for item_ in kernel_size:
+        self.forward_and_backward(item_, item)
 
 
 if __name__ == "__main__":

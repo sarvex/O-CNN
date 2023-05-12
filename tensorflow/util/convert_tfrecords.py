@@ -33,11 +33,11 @@ def load_octree(file):
 
 def write_data_to_tfrecords(file_dir, list_file, records_name, file_type):
   [data, label, index] = get_data_label_pair(list_file)
-  
+
   writer = tf.python_io.TFRecordWriter(records_name)
   for i in range(len(data)):
     if not i % 1000:
-      print('data loaded: {}/{}'.format(i, len(data)))
+      print(f'data loaded: {i}/{len(data)}')
 
     octree_file = load_octree(os.path.join(file_dir, data[i]))
     feature = {file_type: _bytes_feature(octree_file),
@@ -63,9 +63,9 @@ def get_data_label_pair(list_file):
     c = list(zip(file_list, label_list, index_list))
     shuffle(c)
     file_list, label_list, index_list = zip(*c)
-    with open(list_file + '.shuffle.txt', 'w') as f:
+    with open(f'{list_file}.shuffle.txt', 'w') as f:
       for item in c:
-        f.write('{} {}\n'.format(item[0], item[1]))
+        f.write(f'{item[0]} {item[1]}\n')
   return file_list, label_list, index_list
 
 

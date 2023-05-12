@@ -22,12 +22,12 @@ class CompletionSolver(Solver):
 
   def train_step(self, batch):
     output = self.model_forward(batch)
-    output = {'train/' + key: val for key, val in output.items()}
+    output = {f'train/{key}': val for key, val in output.items()}
     return output
 
   def test_step(self, batch):
     output = self.model_forward(batch)
-    output = {'test/' + key: val for key, val in output.items()}
+    output = {f'test/{key}': val for key, val in output.items()}
     return output
 
   def eval_step(self, batch):

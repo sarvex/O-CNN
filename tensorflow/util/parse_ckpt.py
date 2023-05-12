@@ -42,7 +42,7 @@ def list_var():
     print("{:3}, {}, [{}], {}".format(idx, name, shape_str, shape_num))
     total_num += shape_num
 
-  print('Total parameters: {}'.format(total_num))
+  print(f'Total parameters: {total_num}')
 
 
 def to_numpy():
@@ -50,7 +50,7 @@ def to_numpy():
   variable_map = reader.get_variable_to_shape_map()
   names = sorted(variable_map.keys())
 
-  result = dict()
+  result = {}
   for name in names:
     exclude = False
     for s in skips:
@@ -60,11 +60,11 @@ def to_numpy():
 
     result[name] = reader.get_tensor(name)
 
-  filename = ckpt + '.npy'
-  print('Save to {}'.format(filename))
+  filename = f'{ckpt}.npy'
+  print(f'Save to {filename}')
   with open(filename, 'wb') as fid:
     pickle.dump(result, fid)
 
 
 if __name__ == '__main__':
-  eval(args.run + '()')
+  eval(f'{args.run}()')

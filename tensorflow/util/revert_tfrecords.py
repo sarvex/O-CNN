@@ -39,7 +39,7 @@ def read_data_from_tfrecords(records_name, output_path, list_file, file_type, co
       with open(os.path.join(output_path, filename), 'wb') as fo:
         fo.write(octree)
 
-      f.write("{} {}\n".format(filename, label))
+      f.write(f"{filename} {label}\n")
 
 
 if __name__ == '__main__':

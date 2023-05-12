@@ -7,7 +7,7 @@ import ocnn
 
 def resize_with_last_val(list_in, num=3):
   assert (type(list_in) is list and len(list_in) < num + 1)
-  for i in range(len(list_in), num):
+  for _ in range(len(list_in), num):
     list_in.append(list_in[-1])
   return list_in
 
@@ -24,10 +24,8 @@ class OctreeConvFunction(Function):
     ctx.stride = stride
     ctx.nempty = nempty
 
-    data_out = ocnn.nn.octree_conv(
-        data_in, weights, octree, depth, channel_out,
-        kernel_size, stride, nempty)
-    return data_out
+    return ocnn.nn.octree_conv(data_in, weights, octree, depth, channel_out,
+                               kernel_size, stride, nempty)
 
   @staticmethod
   def backward(ctx, grad_in):
@@ -51,10 +49,8 @@ class OctreeDeconvFunction(Function):
     ctx.stride = stride
     ctx.nempty = nempty
 
-    data_out = ocnn.nn.octree_deconv(
-        data_in, weights, octree, depth, channel_out,
-        kernel_size, stride, nempty)
-    return data_out
+    return ocnn.nn.octree_deconv(data_in, weights, octree, depth, channel_out,
+                                 kernel_size, stride, nempty)
 
   @staticmethod
   def backward(ctx, grad_in):
@@ -94,9 +90,7 @@ class OctreeConvBase(nn.Module):
     raise NotImplementedError
 
   def extra_repr(self) -> str:
-    return ('depth={}, channel_in={}, channel_out={}, kernel_size={}, '
-            'stride={}, nempty={}').format(self.depth, self.channel_in,
-             self.channel_out, self.kernel_size, self.stride, self.nempty)
+    return f'depth={self.depth}, channel_in={self.channel_in}, channel_out={self.channel_out}, kernel_size={self.kernel_size}, stride={self.stride}, nempty={self.nempty}'
 
 
 class OctreeConv(OctreeConvBase):
@@ -121,10 +115,16 @@ class OctreeDeconv(OctreeConvBase):
     assert data.size(1) == self.channel_in
     if self.stride == 2 and not self.nempty:
       data = ocnn.octree_depad(data, octree, self.depth)
-    deconv = octree_deconv(
-        data, self.weights, octree, self.depth, self.channel_out,
-        self.kernel_size, self.stride, self.nempty)
-    return deconv
+    return octree_deconv(
+        data,
+        self.weights,
+        octree,
+        self.depth,
+        self.channel_out,
+        self.kernel_size,
+        self.stride,
+        self.nempty,
+    )
 
 
 class OctreeConvFast(OctreeConvBase):
@@ -154,5 +154,5 @@ class OctreeDeconvFast(OctreeConvBase):
     data = torch.squeeze(torch.squeeze(data, dim=0), dim=-1)
     col = torch.mm(self.weights.t(), data)
     col = col.view(self.channel_out, self.kdim, -1)
-    deconv = ocnn.col2octree(col, octree, depth, self.kernel_size, self.stride, False)
-    return deconv
+    return ocnn.col2octree(col, octree, depth, self.kernel_size, self.stride,
+                           False)

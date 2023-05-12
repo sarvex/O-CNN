@@ -19,7 +19,7 @@ dropout = 0.0
 batch_size = 32
 ckpt = args.ckpt if mode != 'randinit' else '\'\''
 module = 'run_cls_finetune.py' if mode != 'randinit' else 'run_cls.py'
-script = 'python %s --config configs/cls_hrnet.yaml' % module
+script = f'python {module} --config configs/cls_hrnet.yaml'
 data = 'dataset/ModelNet40/m40_y'
 ratios = [0.01, 0.02, 0.05, 0.10, 0.20, 0.50, 1.00]
 muls   = [4,    4,    2,    1,    1,    1,    1]
@@ -33,21 +33,20 @@ for i in range(len(ratios)):
 
   cmds = [
       script,
-      'SOLVER.gpu {},'.format(gpu),
+      f'SOLVER.gpu {gpu},',
       'SOLVER.logdir logs/m40/{}/cls_{:.2f}'.format(alias, ratio),
-      'SOLVER.max_iter {}'.format(max_iter),
-      'SOLVER.step_size {},{}'.format(step_size1, step_size2),
-      'SOLVER.test_every_iter {}'.format(test_every_iter),
-      'SOLVER.ckpt {}'.format(ckpt),
-      'DATA.train.location {}_{:.2f}_train_points.tfrecords'.format(data, ratio),
-      'DATA.test.location {}_1.00_test_points.tfrecords'.format(data),
-      'MODEL.factor {}'.format(factor),
-      'MODEL.dropout {},'.format(dropout)]
+      f'SOLVER.max_iter {max_iter}',
+      f'SOLVER.step_size {step_size1},{step_size2}',
+      f'SOLVER.test_every_iter {test_every_iter}',
+      f'SOLVER.ckpt {ckpt}',
+      'DATA.train.location {}_{:.2f}_train_points.tfrecords'.format(
+          data, ratio),
+      f'DATA.test.location {data}_1.00_test_points.tfrecords',
+      f'MODEL.factor {factor}',
+      f'MODEL.dropout {dropout},',
+  ]
   if ratio < 0.1 and mode == 'finetune':
-    cmds.append('SOLVER.mode finetune_head')
-    cmds.append('DATA.train.jitter 0.25')
-
-
+    cmds.extend(('SOLVER.mode finetune_head', 'DATA.train.jitter 0.25'))
   cmd = ' '.join(cmds)
   print('\n', cmd, '\n')
   os.system(cmd)

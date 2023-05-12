@@ -129,9 +129,12 @@ class TransformScanNet:
       color = color_distort(color, self.color_trans_ratio, self.color_jit_std)
       xyz = elastic_distort(xyz, self.elastic_params)
 
-    points = ocnn.points_new(torch.from_numpy(xyz), torch.from_numpy(normal),
-                             torch.from_numpy(color), torch.from_numpy(label))
-    return points
+    return ocnn.points_new(
+        torch.from_numpy(xyz),
+        torch.from_numpy(normal),
+        torch.from_numpy(color),
+        torch.from_numpy(label),
+    )
 
   def __call__(self, sample, idx=None):
     # transformation specified for scannet

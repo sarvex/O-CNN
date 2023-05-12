@@ -68,4 +68,4 @@ def cls_network(octree, flags, training, reuse=False):
   elif flags.name.lower() == 'resnet':
     return network_resnet(octree, flags, training, reuse)
   else:
-    print('Error, no network: ' + flags.name)
+    print(f'Error, no network: {flags.name}')

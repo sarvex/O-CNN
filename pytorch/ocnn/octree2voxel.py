@@ -15,7 +15,7 @@ class FullOctree2Voxel(torch.nn.Module):
     return out
   
   def extra_repr(self) -> str:
-    return 'depth={}'.format(self.depth)
+    return f'depth={self.depth}'
 
 
 # TODO: add octree2voxel module for other octree depth

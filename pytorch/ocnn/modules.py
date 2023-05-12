@@ -135,8 +135,7 @@ class OctreeResBlock(torch.nn.Module):
     conv3 = self.conv1x1b(conv2)
     if self.channel_in != self.channel_out:
       data_in = self.conv1x1c(data_in)
-    data_out = self.relu(conv3 + data_in)
-    return data_out
+    return self.relu(conv3 + data_in)
 
 
 class OctreeResBlock2(torch.nn.Module):
@@ -166,8 +165,7 @@ class OctreeResBlock2(torch.nn.Module):
     conv2 = self.conv3x3b(conv1, octree)
     if self.channel_in != self.channel_out:
       data_in = self.conv1x1(data_in)
-    data_out = self.relu(conv2 + data_in)
-    return data_out
+    return self.relu(conv2 + data_in)
 
 
 class OctreeResBlocks(torch.nn.Module):
@@ -283,8 +281,7 @@ def octree_trilinear(data, octree, depth, target_depth):
   scale = 2.0**(depth-target_depth)
   xyz += torch.cuda.FloatTensor([0.5, 0.5, 0.5, 0.0])
   xyz *= torch.cuda.FloatTensor([scale, scale, scale, 1.0])
-  output = octree_trilinear_pts(data, octree, depth, xyz)
-  return output
+  return octree_trilinear_pts(data, octree, depth, xyz)
 
 
 class OctreeTrilinear(torch.nn.Module):
@@ -293,8 +290,7 @@ class OctreeTrilinear(torch.nn.Module):
     self.depth = depth
 
   def forward(self, data, octree):
-    out = octree_trilinear(data, octree, self.depth, self.depth + 1)
-    return out
+    return octree_trilinear(data, octree, self.depth, self.depth + 1)
 
 
 class OctreeInterp(torch.nn.Module):
@@ -318,8 +314,7 @@ class OctreeInterp(torch.nn.Module):
     return out
 
   def extra_repr(self) -> str:
-    return ('depth={}, method={}, nempty={}').format(
-            self.depth, self.method, self.nempty)
+    return f'depth={self.depth}, method={self.method}, nempty={self.nempty}'
 
 
 def create_full_octree(depth, channel, batch_size=1, node_dis=True):

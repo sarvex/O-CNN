@@ -7,5 +7,5 @@ octrees = ocnn.nn.octree_samples(names)
 octree  = ocnn.nn.octree_batch(octrees[:2])
 
 for i in range(6):
-  octrees[i].numpy().tofile(names[i] + '.octree')
+  octrees[i].numpy().tofile(f'{names[i]}.octree')
 octree.numpy().tofile('octree_batch.octree')

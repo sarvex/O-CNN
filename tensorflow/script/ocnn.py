@@ -15,7 +15,7 @@ def get_variables_with_name(name=None, without=None, train_only=True, verbose=Fa
     d_vars = [var for var in d_vars if without not in var.name]
 
   if verbose:
-    print("  [*] geting variables with %s" % name)
+    print(f"  [*] geting variables with {name}")
     for idx, v in enumerate(d_vars):
       print("  got {:3}: {:15}   {}".format(idx, v.name, str(v.get_shape())))
 
@@ -24,9 +24,12 @@ def get_variables_with_name(name=None, without=None, train_only=True, verbose=Fa
 
 def dense(inputs, nout, use_bias=False):
   inputs = tf.layers.flatten(inputs)
-  fc = tf.layers.dense(inputs, nout, use_bias=use_bias,
-                       kernel_initializer=tf.contrib.layers.xavier_initializer())
-  return fc
+  return tf.layers.dense(
+      inputs,
+      nout,
+      use_bias=use_bias,
+      kernel_initializer=tf.contrib.layers.xavier_initializer(),
+  )
 
 
 def batch_norm(inputs, training, axis=1):
@@ -46,10 +49,15 @@ def conv2d(inputs, nout, kernel_size, stride, padding='SAME', data_format='chann
 
 
 def octree_conv1x1(inputs, nout, use_bias=False):
-  outputs = tf.layers.conv2d(inputs, nout, kernel_size=1, strides=1,
-                             data_format='channels_first', use_bias=use_bias,
-                             kernel_initializer=tf.contrib.layers.xavier_initializer())
-  return outputs
+  return tf.layers.conv2d(
+      inputs,
+      nout,
+      kernel_size=1,
+      strides=1,
+      data_format='channels_first',
+      use_bias=use_bias,
+      kernel_initializer=tf.contrib.layers.xavier_initializer(),
+  )
 
 
 def octree_conv1x1(inputs, nout, use_bias=False):
@@ -121,9 +129,16 @@ def octree_upsample(data, octree, depth, channel, training):
 
 
 def octree_upsample(data, octree, depth, channel, training):
-  up = octree_deconv_bn_relu(data, octree, depth, channel, training,
-                             kernel_size=[2], stride=2, fast_mode=False)
-  return up
+  return octree_deconv_bn_relu(
+      data,
+      octree,
+      depth,
+      channel,
+      training,
+      kernel_size=[2],
+      stride=2,
+      fast_mode=False,
+  )
 
 
 def octree_downsample(data, octree, depth, channel, training):
@@ -207,14 +222,13 @@ def octree_resblock2(data, octree, depth, num_out, training):
     conv = octree_conv_bn_relu(data, octree, depth,  num_out/4, training)
   with tf.variable_scope("conv_2"):
     conv = octree_conv_bn(conv, octree, depth, num_out, training)
-  
+
   link = data
   if num_in != num_out:
     with tf.variable_scope("conv_1x1"):
       link = octree_conv1x1_bn(data, num_out, training=training)
 
-  out = tf.nn.relu(conv + link)
-  return out
+  return tf.nn.relu(conv + link)
 
 
 def predict_module(data, num_output, num_hidden, training):
@@ -256,8 +270,7 @@ def l2_regularizer(name, weight_decay):
 
 def label_accuracy(label, label_gt):
   label_gt = tf.cast(label_gt, tf.int32)
-  accuracy = tf.reduce_mean(tf.to_float(tf.equal(label, label_gt)))
-  return accuracy
+  return tf.reduce_mean(tf.to_float(tf.equal(label, label_gt)))
 
 
 def softmax_accuracy(logit, label):
@@ -273,7 +286,7 @@ def regress_loss(signal, signal_gt):
 
 def normalize_signal(data):
   channel = data.shape[1]
-  assert(channel == 3 or channel == 4)
+  assert channel in [3, 4]
   with tf.variable_scope("normalize"):
     if channel == 4:
       normals = tf.slice(data, [0, 0, 0, 0], [1, 3, -1, 1])
@@ -345,9 +358,7 @@ def build_solver(total_loss, learning_rate_handle, gpu_num=1):
 
 def summary_train(names, tensors):
   with tf.name_scope('summary_train'):
-    summaries = []
-    for it in zip(names, tensors):
-      summaries.append(tf.summary.scalar(it[0], it[1]))
+    summaries = [tf.summary.scalar(it[0], it[1]) for it in zip(names, tensors)]
     summ = tf.summary.merge(summaries)
   return summ
 

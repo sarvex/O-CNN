@@ -13,7 +13,7 @@ def cls_network(octree, flags, training, reuse=False):
   elif flags.name.lower() == 'hrnet':
     return HRNet(flags).network_cls(octree, training, reuse)
   else:
-    print('Error, no network: ' + flags.name)
+    print(f'Error, no network: {flags.name}')
 
 def seg_network(octree, flags, training, reuse=False, pts=None, mask=None):
   if flags.name.lower() == 'unet':
@@ -22,9 +22,7 @@ def seg_network(octree, flags, training, reuse=False, pts=None, mask=None):
     return network_segnet(octree, flags, training, reuse)
   elif flags.name.lower() == 'hrnet':
     return HRNet(flags).network_seg(octree, training, reuse, pts, mask)
-  # elif flags.name.lower() == 'unet_scannet':
-  #   return network_unet34(octree, flags, training, reuse, pts, mask)
   else:
-    print('Error, no network: ' + flags.name)
+    print(f'Error, no network: {flags.name}')
 
     

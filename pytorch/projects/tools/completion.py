@@ -20,19 +20,19 @@ def download_point_clouds():
   if not os.path.exists(root_folder):
     os.makedirs(root_folder)
   url = 'https://www.dropbox.com/s/z2x0mw4ai18f855/ocnn_completion.zip?dl=0'
-  cmd = 'wget %s -O %s.zip' % (url, root_folder)
+  cmd = f'wget {url} -O {root_folder}.zip'
   print(cmd)
   os.system(cmd)
 
   # unzip
-  cmd = 'unzip %s.zip -d %s' % (root_folder, root_folder)
+  cmd = f'unzip {root_folder}.zip -d {root_folder}'
   print(cmd)
   os.system(cmd)
 
 
 def _convert_ply_to_points(prefix='shape'):
-  ply_folder = os.path.join(root_folder, prefix + '.ply')
-  points_folder = os.path.join(root_folder, prefix + '.points')
+  ply_folder = os.path.join(root_folder, f'{prefix}.ply')
+  points_folder = os.path.join(root_folder, f'{prefix}.points')
 
   folders = os.listdir(ply_folder)
   for folder in folders:
@@ -50,8 +50,7 @@ def _convert_ply_to_points(prefix='shape'):
     output_path = os.path.join(points_folder, folder)
     if not os.path.exists(output_path):
       os.makedirs(output_path)
-    cmd = '%s --filenames %s --output_path %s --verbose 0' % \
-          (ply2points, filelist_name, output_path)
+    cmd = f'{ply2points} --filenames {filelist_name} --output_path {output_path} --verbose 0'
     print(cmd)
     os.system(cmd)
     os.remove(filelist_name)
@@ -63,8 +62,8 @@ def convert_ply_to_points():
 
 
 def _convert_points_to_ply(prefix='shape'):
-  ply_folder = os.path.join(root_folder, prefix + '.ply')
-  points_folder = os.path.join(root_folder, prefix + '.points')
+  ply_folder = os.path.join(root_folder, f'{prefix}.ply')
+  points_folder = os.path.join(root_folder, f'{prefix}.points')
 
   folders = os.listdir(points_folder)
   for folder in folders:
@@ -82,8 +81,7 @@ def _convert_points_to_ply(prefix='shape'):
     output_path = os.path.join(ply_folder, folder)
     if not os.path.exists(output_path):
       os.makedirs(output_path)
-    cmd = '%s --filenames %s --output_path %s --verbose 0' % \
-          (points2ply, filelist_name, output_path)
+    cmd = f'{points2ply} --filenames {filelist_name} --output_path {output_path} --verbose 0'
     print(cmd)
     os.system(cmd)
     os.remove(filelist_name)
@@ -105,7 +103,7 @@ def rename_output_octree():
   with open(filelist, 'r') as fid:
     for line in fid:
       filename = line.split()[0]
-      filenames.append(filename[:-6] + 'octree')
+      filenames.append(f'{filename[:-6]}octree')
 
   idx = 0
   folder_in = args.octree
@@ -123,7 +121,7 @@ def rename_output_octree():
 
 def _convert_octree_to_points(suffix='ply'):
   octree_folder = os.path.join(root_folder, 'output.octree')
-  points_folder = os.path.join(root_folder, 'output.' + suffix)
+  points_folder = os.path.join(root_folder, f'output.{suffix}')
 
   folders = os.listdir(octree_folder)
   for folder in folders:
@@ -141,8 +139,7 @@ def _convert_octree_to_points(suffix='ply'):
     output_path = os.path.join(points_folder, folder)
     if not os.path.exists(output_path):
       os.makedirs(output_path)
-    cmd = '%s --filenames %s --output_path %s --verbose 0 --suffix %s' % \
-          (octree2pts, filelist_name, output_path, suffix)
+    cmd = f'{octree2pts} --filenames {filelist_name} --output_path {output_path} --verbose 0 --suffix {suffix}'
     print(cmd)
     os.system(cmd)
     os.remove(filelist_name)
@@ -154,4 +151,4 @@ def convert_octree_to_points():
 
 
 if __name__ == '__main__':
-  eval('%s()' % args.run)
+  eval(f'{args.run}()')

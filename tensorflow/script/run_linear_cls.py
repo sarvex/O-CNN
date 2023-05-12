@@ -13,8 +13,8 @@ FLAGS = parse_args()
 class NumpyDataset:
   def __init__(self, flags):
     self.flags = flags
-    self.data  = np.load('%s_%s.npy' % (flags.location, flags.x_alias))
-    self.label = np.load('%s_%s.npy' % (flags.location, flags.y_alias))
+    self.data = np.load(f'{flags.location}_{flags.x_alias}.npy')
+    self.label = np.load(f'{flags.location}_{flags.y_alias}.npy')
 
   def __call__(self):
     with tf.name_scope('dataset'):

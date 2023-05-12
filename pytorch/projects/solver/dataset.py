@@ -20,7 +20,7 @@ class Dataset(torch.utils.data.Dataset):
     self.read_file = read_file
     self.filenames, self.labels = self.load_filenames()
     if self.in_memory:
-      print('Load files into memory from ' + self.filelist)
+      print(f'Load files into memory from {self.filelist}')
       self.samples = [self.read_file(f)
                       for f in tqdm(self.filenames, ncols=80, leave=False)]
 

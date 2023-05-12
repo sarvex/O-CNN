@@ -57,8 +57,7 @@ class OUNet(torch.nn.Module):
     depth, full_depth = self.depth, self.full_depth
     data = self.get_input_feature(octree)
 
-    convs = dict()
-    convs[depth] = self.conv1(data, octree)
+    convs = {depth: self.conv1(data, octree)}
     for i, d in enumerate(range(depth, full_depth-1, -1)):
       convs[d] = self.encoder[i](convs[d], octree)
       if d > full_depth:
@@ -67,7 +66,7 @@ class OUNet(torch.nn.Module):
     return convs
 
   def ocnn_decoder(self, convs, octree_out, octree, return_deconvs=False):
-    output, deconvs = dict(), dict()
+    output, deconvs = {}, {}
     depth, full_depth = self.depth, self.full_depth
 
     deconvs[full_depth] = convs[full_depth]
@@ -99,11 +98,10 @@ class OUNet(torch.nn.Module):
     return (output, deconvs) if return_deconvs else output
 
   def decode_shape(self, convs, octree, return_deconvs=False):
-    deconvs = dict()
     depth, full_depth = self.depth, self.full_depth
     octree_out = ocnn.create_full_octree(full_depth, self.nout)
 
-    deconvs[full_depth] = convs[full_depth]
+    deconvs = {full_depth: convs[full_depth]}
     for i, d in enumerate(range(full_depth, depth+1)):
       if d > full_depth:
         deconvd = self.upsample[i-1](deconvs[d-1], octree_out)
@@ -132,10 +130,10 @@ class OUNet(torch.nn.Module):
 
   def forward(self, octree_in, octree_gt=None, run='compute_loss'):
     convs = self.ocnn_encoder(octree_in)
-    if 'compute_loss' == run:
+    if run == 'compute_loss':
       assert octree_gt is not None
       output = self.ocnn_decoder(convs, octree_gt, octree_in)
-    elif 'decode_shape' == run:
+    elif run == 'decode_shape':
       output = self.decode_shape(convs, octree_in)
     else:
       raise ValueError

@@ -30,14 +30,15 @@ def prepare_data():
   if not os.path.exists(root_folder):
     os.makedirs(root_folder)
   data_folder = os.path.join(root_folder, 'data_v0')
-  assert os.path.exists(data_folder), \
-         'Please extract the original PartNet Data to: %s' % data_folder
+  assert os.path.exists(
+      data_folder
+  ), f'Please extract the original PartNet Data to: {data_folder}'
 
   # download the code
   code_folder = os.path.join(root_folder, 'partnet_dataset_master')
   if not os.path.exists(code_folder):
     url = 'https://github.com/daerduoCarey/partnet_dataset.git'
-    os.system('git clone %s %s' % (url, code_folder))
+    os.system(f'git clone {url} {code_folder}')
 
 
 def convert_ply():
@@ -57,11 +58,10 @@ def convert_points():
   if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
-  filenames = []
-  for filename in os.listdir(input_folder):
-    if filename.endswith('.ply'):
-      filenames.append(os.path.join(input_folder, filename))
-
+  filenames = [
+      os.path.join(input_folder, filename)
+      for filename in os.listdir(input_folder) if filename.endswith('.ply')
+  ]
   list_filename = os.path.join(output_folder, 'filelist_ply.txt')
   with open(list_filename, 'w') as fid:
     fid.write('\n'.join(filenames))
@@ -88,7 +88,7 @@ def convert_points_to_tfrecords():
   for category in finegrained_category:
     level_i = finest_level_dict[category]
     for phase in ['train', 'val', 'test']:
-      split_json = os.path.join(split_path, "%s.%s.json" % (category, phase))
+      split_json = os.path.join(split_path, f"{category}.{phase}.json")
       with open(split_json, "r") as fid:
         name_json = json.load(fid)
       names = ['%s_%s_%s_level%d.points 0' % (
@@ -158,8 +158,7 @@ def get_node_mapping(dir_path, category_list):
   node_mapping_dict = {}
   cate_num = len(category_list)
   for i in range(cate_num):
-    trans_fn = '%s/stats/merging_hierarchy_mapping/%s.txt' % (
-        dir_path, category_list[i])
+    trans_fn = f'{dir_path}/stats/merging_hierarchy_mapping/{category_list[i]}.txt'
     with open(trans_fn, 'r') as fin:
       node_mapping = {item.rstrip().split()[0]: item.rstrip().split()[
           1] for item in fin.readlines()}
@@ -195,7 +194,7 @@ def traverse(record, cur_name, node_mapping, new_result):
   if len(cur_name) == 0:
     cur_name = record['name']
   else:
-    cur_name = cur_name + '/' + record['name']
+    cur_name = f'{cur_name}/' + record['name']
   if cur_name in node_mapping.keys():
     new_part_name = node_mapping[cur_name]
     leaf_id_list = get_all_leaf_ids(record)

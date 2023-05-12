@@ -28,10 +28,10 @@ def download_and_unzip():
   print('Downloading and unzipping ...')
   if not os.path.exists(root_folder): os.makedirs(root_folder)
   # url = 'https://shapenet.cs.stanford.edu/media/%s.zip' % zip_name
-  url = 'https://www.dropbox.com/s/guy440yysyo0vrr/%s.zip?dl=0' % zip_name
-  filename = os.path.join(root_folder, zip_name + '.zip')
-  os.system('wget %s -O %s --no-check-certificate' % (url, filename))
-  os.system('unzip %s -d %s' % (filename, root_folder))
+  url = f'https://www.dropbox.com/s/guy440yysyo0vrr/{zip_name}.zip?dl=0'
+  filename = os.path.join(root_folder, f'{zip_name}.zip')
+  os.system(f'wget {url} -O {filename} --no-check-certificate')
+  os.system(f'unzip {filename} -d {root_folder}')
 
 def txt_to_ply():
   print('Convert txt files to ply files ...')
@@ -48,7 +48,7 @@ def txt_to_ply():
     filenames = os.listdir(src_folder)
     for filename in filenames:
       filename_txt = os.path.join(src_folder, filename)
-      filename_ply = os.path.join(des_folder, filename[:-4] + '.ply')
+      filename_ply = os.path.join(des_folder, f'{filename[:-4]}.ply')
       with open(filename_txt, 'r') as fid:
         lines = []
         for line in fid:
@@ -71,7 +71,7 @@ def ply_to_points():
     if not os.path.exists(des_folder): os.makedirs(des_folder)
     if not os.path.exists(list_folder): os.makedirs(list_folder)
 
-    list_filename = os.path.join(list_folder, c + '.txt')
+    list_filename = os.path.join(list_folder, f'{c}.txt')
     filenames = [os.path.join(src_folder, filename) for filename in os.listdir(src_folder)]
     with open(list_filename, 'w') as fid:
       fid.write('\n'.join(filenames))
@@ -95,13 +95,13 @@ def points_to_tfrecords():
   with open(val_list_name)   as fid: val_list   = json.load(fid)
   with open(test_list_name)  as fid: test_list  = json.load(fid)
   for i, c in enumerate(categories):
-    filelist_name = os.path.join(list_folder, c + '_train_val.txt')
+    filelist_name = os.path.join(list_folder, f'{c}_train_val.txt')
     filelist = ['%s.points %d' % (line[11:], i) for line in train_list if c in line] + \
                ['%s.points %d' % (line[11:], i) for line in val_list   if c in line]
     with open(filelist_name, 'w') as fid:
       fid.write('\n'.join(filelist))
 
-    dataset_name =  os.path.join(dataset_folder, c + '_train_val.tfrecords')
+    dataset_name = os.path.join(dataset_folder, f'{c}_train_val.tfrecords')
     cmds = ['python', convert_tfrecords,
             '--file_dir', points_folder,
             '--list_file', filelist_name,
@@ -110,12 +110,12 @@ def points_to_tfrecords():
     print(cmd + '\n')
     os.system(cmd)
 
-    filelist_name = os.path.join(list_folder, c + '_test.txt')
+    filelist_name = os.path.join(list_folder, f'{c}_test.txt')
     filelist = ['%s.points %d' % (line[11:], i) for line in test_list if c in line]
     with open(filelist_name, 'w') as fid:
       fid.write('\n'.join(filelist))
 
-    dataset_name = os.path.join(dataset_folder, c + '_test.tfrecords')
+    dataset_name = os.path.join(dataset_folder, f'{c}_test.tfrecords')
     cmds = ['python', convert_tfrecords,
             '--file_dir', points_folder,
             '--list_file', filelist_name,

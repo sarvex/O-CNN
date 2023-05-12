@@ -73,7 +73,7 @@ class OctreePoolBase(nn.Module):
     self.depth = depth
 
   def extra_repr(self) -> str:
-    return 'depth={}'.format(self.depth)
+    return f'depth={self.depth}'
 
 
 class OctreeMaxPool(OctreePoolBase):
@@ -90,8 +90,7 @@ class OctreeMaxPool(OctreePoolBase):
 class OctreeMaxUnpool(OctreePoolBase):
   def forward(self, data, mask, octree):
     pool = ocnn.octree_depad(data, octree, self.depth)  # !!! depth
-    output = octree_max_unpool(pool, mask, octree, self.depth + 1)
-    return output
+    return octree_max_unpool(pool, mask, octree, self.depth + 1)
 
 
 class OctreeAvgPool(OctreePoolBase):
@@ -99,8 +98,7 @@ class OctreeAvgPool(OctreePoolBase):
     channel = data.shape[1]
     data = data.view(1, channel, -1, 8)
     pool = data.mean(dim=3, keepdims=True)
-    output = ocnn.octree_pad(pool, octree, self.depth-1)  # !!! depth-1
-    return output
+    return ocnn.octree_pad(pool, octree, self.depth-1)
 
 
 class FullOctreeGlobalPool(OctreePoolBase):

@@ -194,7 +194,7 @@ def octree_avg_pool(data, octree, depth):
 # todo: merge octree_conv_fast and octree_conv_memory to reduce code redundancy
 def octree_conv_fast(data, octree, depth, channel, kernel_size=[3], stride=1):
   assert(type(kernel_size) is list and len(kernel_size) < 4)
-  for i in range(len(kernel_size), 3):
+  for _ in range(len(kernel_size), 3):
     kernel_size.append(kernel_size[-1])
 
   with tf.variable_scope('octree_conv'):
@@ -212,7 +212,7 @@ def octree_conv_fast(data, octree, depth, channel, kernel_size=[3], stride=1):
 
 def octree_conv_memory(data, octree, depth, channel, kernel_size=[3], stride=1):
   assert(type(kernel_size) is list and len(kernel_size) < 4)
-  for i in range(len(kernel_size), 3):
+  for _ in range(len(kernel_size), 3):
     kernel_size.append(kernel_size[-1])
 
   with tf.variable_scope('octree_conv'):
@@ -227,7 +227,7 @@ def octree_conv_memory(data, octree, depth, channel, kernel_size=[3], stride=1):
 
 def octree_deconv_fast(data, octree, depth, channel, kernel_size=[3], stride=1):
   assert(type(kernel_size) is list and len(kernel_size) < 4)
-  for i in range(len(kernel_size), 3):
+  for _ in range(len(kernel_size), 3):
     kernel_size.append(kernel_size[-1])
 
   with tf.variable_scope('octree_deconv'):
@@ -247,7 +247,7 @@ def octree_deconv_fast(data, octree, depth, channel, kernel_size=[3], stride=1):
 
 def octree_deconv_memory(data, octree, depth, channel, kernel_size=[3], stride=1):
   assert(type(kernel_size) is list and len(kernel_size) < 4)
-  for i in range(len(kernel_size), 3):
+  for _ in range(len(kernel_size), 3):
     kernel_size.append(kernel_size[-1])
 
   with tf.variable_scope('octree_deconv'):

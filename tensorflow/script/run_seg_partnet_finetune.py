@@ -52,7 +52,7 @@ class PartNetFinetune(PartNetSolver):
     # !!! Restore the trainable/untrainable variables under the name scope `ocnn`
     # Note the variables added by solvers are filtered out since they are not
     # under the scope of `ocnn`
-    print('Restore from: ' + ckpt)
+    print(f'Restore from: {ckpt}')
     var_restore = get_variables_with_name(
         'ocnn', without='predict_6/conv2', verbose=self.flags.verbose, train_only=False)
     tf_saver = tf.train.Saver(var_list=var_restore)
